@@ -11,4 +11,19 @@
         </foreach>
     </insert>
 
+    <delete id="deleteByDishIds">
+        delete from dish_flavor
+        where dish_id in
+        <!-- 动态解析传入的参数 -->
+        <foreach collection="dishIds" item="dishId" open="(" separator="," close=")">
+            #{dishId}
+        </foreach>
+    </delete>
+
+    <select id="getByDishId" resultType="com.sky.entity.DishFlavor">
+        select *
+        from dish_flavor
+        where dish_id = #{dishId}
+    </select>
+
 </mapper>
