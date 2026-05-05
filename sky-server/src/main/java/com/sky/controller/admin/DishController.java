@@ -12,6 +12,7 @@ import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -23,6 +24,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
+import java.util.Set;
 
 @RestController
 @RequestMapping("/admin/dish")
@@ -31,12 +33,15 @@ import java.util.List;
 public class DishController {
     @Autowired
     private DishService dishService;
+    @Autowired
+    private RedisTemplate redisTemplate;
 
     @PostMapping
     @ApiOperation(value = "新增菜品")
     public Result save(@RequestBody DishDTO dishDTO){
         log.info("新增菜品: {}", dishDTO);
         dishService.saveWithFlavor(dishDTO);
+        redisTemplate.delete("dish_" + dishDTO.getCategoryId());
         return Result.success();
     }
 
@@ -63,6 +68,7 @@ public class DishController {
     public Result delete(@RequestParam List<Long> ids) {//利用list集合来批量删除菜品，动态解析传入的参数
         log.info("批量删除菜品：{}", ids);
         dishService.deleteBatch(ids);
+        clearDishCache();
         return Result.success();
     }
 
@@ -89,6 +95,7 @@ public class DishController {
     public Result update(@RequestBody DishDTO dishDTO) {
         log.info("修改菜品：{}", dishDTO);
         dishService.updateWithFlavor(dishDTO);
+        clearDishCache();
         return Result.success();
     }
 
@@ -104,5 +111,28 @@ public class DishController {
         log.info("根据分类id查询菜品：{}", categoryId);
         List<Dish> list = dishService.list(categoryId);
         return Result.success(list);
+    }
+
+    /**
+     * 菜品起售停售
+     *
+     * @param status 状态：0 停售，1 起售
+     * @param id     菜品 id
+     */
+    @PostMapping("/status/{status}")
+    @ApiOperation(value = "菜品起售停售")
+    public Result<String> startOrStop(@PathVariable Integer status, @RequestParam Long id) {
+        log.info("菜品起售停售：{}, {}", status, id);
+        dishService.startOrStop(status, id);
+        clearDishCache();
+        return Result.success();
+    }
+
+    /**
+     * 清理所有以 dish_ 开头的菜品缓存（批量删除、修改、起售停售等场景）
+     */
+    private void clearDishCache() {
+        Set keys = redisTemplate.keys("dish_*");
+        redisTemplate.delete(keys);
     }
 }
