@@ -8,7 +8,6 @@ import com.sky.entity.ShoppingCart;
 import com.sky.mapper.DishMapper;
 import com.sky.mapper.SetmealMapper;
 import com.sky.mapper.ShoppingCartMapper;
-import com.sky.service.SetmealService;
 import com.sky.service.ShoppingCartService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanUtils;
@@ -30,7 +29,7 @@ public class ShoppingCarServiceImpl implements ShoppingCartService {
     private SetmealMapper setmealMapper;
     /**
      * 添加购物车
-     * @param shoppingCartDTO
+     * @param shoppingCartDTO 购物车信息
      */
     public void addShoppingCart(ShoppingCartDTO shoppingCartDTO) {
         //判断当前购物车数据是否在购物车中
@@ -44,7 +43,7 @@ public class ShoppingCarServiceImpl implements ShoppingCartService {
 
 
         //如果已经存在，就在原来数量基础上加一
-            if (list != null && list.size() > 0) {
+            if (list != null && !list.isEmpty()) {
                 shoppingCart = list.get(0);
                 shoppingCart.setNumber(shoppingCart.getNumber() + 1);
                 shoppingCartMapper.updateNumberById(shoppingCart);
@@ -76,7 +75,7 @@ public class ShoppingCarServiceImpl implements ShoppingCartService {
 
     /**
      * 查看购物车
-     * @return
+     * @return 当前用户的购物车列表
      */
     public List<ShoppingCart> listShoppingCart() {
         ShoppingCart shoppingCart = ShoppingCart.builder()

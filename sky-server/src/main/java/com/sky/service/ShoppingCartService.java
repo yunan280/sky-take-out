@@ -9,7 +9,7 @@ public interface ShoppingCartService {
 
     /**
      * 添加购物车
-     * @param shoppingCartDTO
+     * @param shoppingCartDTO 购物车信息
      */
     void addShoppingCart(ShoppingCartDTO shoppingCartDTO);
 
