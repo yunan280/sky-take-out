@@ -95,6 +95,7 @@ public class DishController {
     public Result update(@RequestBody DishDTO dishDTO) {
         log.info("修改菜品：{}", dishDTO);
         dishService.updateWithFlavor(dishDTO);
+        //清理缓存数据，直接调用函数即可
         clearDishCache();
         return Result.success();
     }
